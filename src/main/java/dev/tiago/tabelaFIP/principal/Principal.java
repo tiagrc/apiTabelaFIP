@@ -2,11 +2,15 @@ package dev.tiago.tabelaFIP.principal;
 
 import dev.tiago.tabelaFIP.model.Dados;
 import dev.tiago.tabelaFIP.model.Modelos;
+import dev.tiago.tabelaFIP.model.Veiculo;
 import dev.tiago.tabelaFIP.service.ConsumoApi;
 import dev.tiago.tabelaFIP.service.ConverteDados;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner sc = new Scanner(System.in);
@@ -56,6 +60,35 @@ public class Principal {
         modeloLista.modelos().stream().sorted(Comparator.comparing(Dados::codigo))
                 .forEach(System.out::println);
 
+        System.out.println("\nDigite um trecho do nome do carro a ser buscado");
+        var nomeVeiculo = sc.nextLine();
 
+        List<Dados> modelosFiltrados = modeloLista
+                .modelos()
+                .stream()
+                .filter(m -> m.nome().toLowerCase().contains(nomeVeiculo.toLowerCase()))
+                .collect(Collectors.toList());
+
+        System.out.println("\nModelos filtrados");
+        modelosFiltrados.forEach(System.out::println);
+
+        System.out.println("Digite o código do modelo");
+        var codigoModelo = sc.nextLine();
+
+        endereco = endereco + "/" + codigoModelo + "/anos";
+        json = consumo.obterDados(endereco);
+        List<Dados> anos = converor.obterLista(json, Dados.class);
+
+        List<Veiculo> veiculos = new ArrayList<>();
+
+        for (int i = 0; i < anos.size(); i++) {
+            var enderecoAnos = endereco + "/" + anos.get(i).codigo();
+            json = consumo.obterDados(enderecoAnos);
+            Veiculo veiculo = converor.obterDados(json, Veiculo.class);
+            veiculos.add(veiculo);
+        }
+
+        System.out.println("\nTodos os veículos filtrados por ano");
+        veiculos.forEach(System.out::println);
     }
 }
